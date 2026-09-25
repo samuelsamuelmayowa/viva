@@ -6,6 +6,7 @@ import { Skeleton, Empty } from "./components/ui";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Finance = lazy(() => import("./pages/Finance"));
 const Resources = lazy(() => import("./pages/Resources"));
 const Approvals = lazy(() => import("./pages/Approvals"));
 const SyncCenter = lazy(() => import("./pages/SyncCenter"));
@@ -44,6 +45,7 @@ export default function App() {
             <Routes>
                 <Route element={<Layout />}>
                     <Route index element={<Dashboard />} />
+                    <Route path="finance" element={<Guard permission="finance.read"><Finance /></Guard>} />
                     <Route path="stock-tools" element={<Guard permission="inventory.read"><StockTools /></Guard>} />
                     {Object.entries(modules).map(([module, config]) => (
                         <Route
