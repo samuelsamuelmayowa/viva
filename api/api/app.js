@@ -4,7 +4,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { rateLimit } = require("express-rate-limit");
-const logger = require("./utils/logger");
+const logger = require("../utils/logger");
 const app = express();
 app.disable("x-powered-by");
 
@@ -62,7 +62,7 @@ app.use("/api", (req, res, next) => {
     next();
 });
 
-app.use("/api", require("./routes"));
+app.use("/api", require("../routes"));
 
 app.use((_req, res) =>
     res.status(404).json({ message: "Endpoint not found." }),
@@ -234,7 +234,7 @@ app.use((error, req, res, _next) => {
         );
 
         try {
-            const { SystemLog } = require("./models");
+            const { SystemLog } = require("../models");
 
             SystemLog.create({
                 level: "error",
