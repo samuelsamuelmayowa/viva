@@ -3,13 +3,17 @@ const { User, Session, sequelize, SystemLog } = require("../models");
 const { token, hash } = require("../utils/crypto");
 const { z } = require("../validators");
 const { audit } = require("../services/audit");
+
+const isProduction = process.env.NODE_ENV === "production";
+
 const cookie = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/",
     maxAge: 8 * 60 * 60 * 1000,
 };
+
 const dummyHash = bcrypt.hashSync("no-account-timing-padding", 12);
 async function login(req, res) {
     const data = z
