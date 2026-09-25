@@ -4,9 +4,11 @@ const { hash } = require("../utils/crypto");
 const { assert } = require("../utils/errors");
 async function authenticate(req, res, next) {
   try {
+    const sessionToken = req.cookies?.viva_session;
+    assert(sessionToken, 401, "Sign in to continue.", "UNAUTHENTICATED");
     const session = await Session.findOne({
       where: {
-        tokenHash: hash(req.cookies.viva_session || ""),
+        tokenHash: hash(sessionToken),
         expiresAt: { [Op.gt]: new Date() },
       },
     });
