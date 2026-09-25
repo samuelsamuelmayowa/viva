@@ -38,6 +38,13 @@ async function review(req, id, decision, comments) {
     assert(Model, 422, 'Unsupported approval module.');
     const record = await Model.findByPk(request.recordId, { transaction, lock: transaction.LOCK.UPDATE });
     assert(record && record.version === request.originalData.version, 409, 'Record changed after this request. Submit a new request.', 'VERSION_CONFLICT');
+    if (request.module === 'expenses' && request.proposedData.amount !== undefined) {
+     const { CashEntry } = require('../models/finance');
+     const Decimal = require('decimal.js');
+     const payments = await CashEntry.findAll({ where: { expenseId: record.id }, transaction, lock: transaction.LOCK.UPDATE });
+     const paid = payments.reduce((sum, p) => sum.plus(p.amount), new Decimal(0));
+     assert(paid.lte(request.proposedData.amount), 409, 'The corrected expense cannot be less than payments already recorded.');
+    }
     await record.update({ ...request.proposedData, version: record.version + 1 }, { transaction });
    }
   }

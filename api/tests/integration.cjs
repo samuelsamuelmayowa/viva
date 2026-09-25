@@ -24,6 +24,8 @@ before(async()=>{
 });
 after(async()=>{
  const userWhere={userId:{[Op.in]:ids.users}},locationWhere={locationId:{[Op.in]:ids.locations}};
+ const fm=require('../models/finance');
+ await fm.CashEntry.destroy({where:locationWhere});await fm.Sale.destroy({where:locationWhere});await fm.Account.destroy({where:locationWhere});
  await require('../models/stock').StockCount.destroy({where:locationWhere});await require('../models/stock').Reservation.destroy({where:locationWhere});
  await m.Notification.destroy({where:userWhere});await m.Session.destroy({where:userWhere});await m.SyncOperation.destroy({where:userWhere});await m.SystemLog.destroy({where:userWhere});await m.Audit.destroy({where:userWhere});
  await m.Approval.destroy({where:{requestedBy:{[Op.in]:ids.users}}});await m.Movement.destroy({where:userWhere});await m.Transfer.destroy({where:{requestedBy:{[Op.in]:ids.users}}});await m.Expense.destroy({where:{createdBy:{[Op.in]:ids.users}},force:true});await m.Distributor.destroy({where:locationWhere,force:true});await m.Inventory.destroy({where:{warehouseId:{[Op.in]:ids.warehouses}}});

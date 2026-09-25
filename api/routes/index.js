@@ -32,6 +32,7 @@ router.post(
   auth.login,
 );
 router.use(authenticate);
+router.use('/finance', require('./finance'));
 router.get("/auth/me", auth.session);
 router.post("/auth/logout", auth.logout);
 router.get("/dashboard", permit('dashboard.read'), insights.dashboard);
