@@ -1,0 +1,36 @@
+{
+  "name": "viva-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js",
+    "migrate": "node scripts/migrate.js",
+    "bootstrap": "node scripts/bootstrap.js",
+    "test": "node --test tests/stock.test.js",
+    "test:integration": "node --test tests/integration.cjs"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "sequelize": "^6.37.7",
+    "mysql2": "^3.14.0",
+    "dotenv": "^16.5.0",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "helmet": "^8.1.0",
+    "express-rate-limit": "^7.5.0",
+    "zod": "^3.24.3",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "decimal.js": "^10.5.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.1.0"
+  },
+  "overrides": {
+    "sequelize": {
+      "uuid": "^11.1.1"
+    }
+  }
+}

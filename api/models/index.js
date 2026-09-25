@@ -1,0 +1,322 @@
+const { DataTypes: D } = require("sequelize");
+const { sequelize } = require("../db");
+const id = () => ({ type: D.UUID, defaultValue: D.UUIDV4, primaryKey: true });
+const str = (length = 255) => ({ type: D.STRING(length), allowNull: false });
+const ref = (table, nullable = false) => ({
+  type: D.UUID,
+  allowNull: nullable,
+  references: { model: table, key: "id" },
+  onDelete: "RESTRICT",
+});
+const money = () => ({
+  type: D.DECIMAL(18, 2),
+  allowNull: false,
+  defaultValue: 0,
+});
+const qty = () => ({
+  type: D.DECIMAL(18, 3),
+  allowNull: false,
+  defaultValue: 0,
+});
+const version = () => ({
+  type: D.INTEGER.UNSIGNED,
+  allowNull: false,
+  defaultValue: 0,
+});
+const define = (name, fields, indexes = [], archive = false) =>
+  sequelize.define(
+    name,
+    { id: id(), ...fields },
+    { tableName: name, freezeTableName: true, indexes, paranoid: archive },
+  );
+const Location = define(
+  "locations",
+  {
+    name: str(),
+    state: str(),
+    city: str(),
+    address: D.TEXT,
+    kind: { ...str(), defaultValue: "branch" },
+    active: { type: D.BOOLEAN, defaultValue: true },
+    version: version(),
+  },
+  [],
+  true,
+);
+const Warehouse = define(
+  "warehouses",
+  {
+    name: str(),
+    code: { ...str(32), unique: true },
+    locationId: ref("locations"),
+    address: D.TEXT,
+    active: { type: D.BOOLEAN, defaultValue: true },
+    version: version(),
+  },
+  [],
+  true,
+);
+const Role = define("roles", {
+  name: { ...str(64), unique: true },
+  organizationWide: { type: D.BOOLEAN, defaultValue: false },
+});
+const Permission = define("permissions", { key: { ...str(64), unique: true } });
+const RolePermission = define(
+  "role_permissions",
+  { roleId: ref("roles"), permissionId: ref("permissions") },
+  [{ unique: true, fields: ["roleId", "permissionId"] }],
+);
+const User = define(
+  "users",
+  {
+    name: str(),
+    email: { ...str(), unique: true },
+    passwordHash: str(),
+    active: { type: D.BOOLEAN, defaultValue: true },
+  },
+  [],
+  true,
+);
+const UserRole = define(
+  "user_roles",
+  { userId: ref("users"), roleId: ref("roles") },
+  [{ unique: true, fields: ["userId", "roleId"] }],
+);
+const UserLocation = define(
+  "user_locations",
+  { userId: ref("users"), locationId: ref("locations") },
+  [{ unique: true, fields: ["userId", "locationId"] }],
+);
+const Session = define(
+  "sessions",
+  {
+    userId: ref("users"),
+    tokenHash: { ...str(64), unique: true },
+    csrfHash: str(64),
+    expiresAt: { type: D.DATE, allowNull: false },
+  },
+  [{ fields: ["expiresAt"] }],
+);
+const ProductCategory = define("product_categories", {
+  name: { ...str(), unique: true },
+});
+const ExpenseCategory = define("expense_categories", {
+  name: { ...str(), unique: true },
+});
+const Product = define(
+  "products",
+  {
+    name: str(),
+    sku: { ...str(64), unique: true },
+    barcode: D.STRING,
+    categoryId: ref("product_categories", true),
+    unit: str(32),
+    costPrice: money(),
+    sellingPrice: money(),
+    minimumStock: qty(),
+    description: D.TEXT,
+    active: { type: D.BOOLEAN, defaultValue: true },
+    version: version(),
+  },
+  [],
+  true,
+);
+const Inventory = define(
+  "inventory",
+  {
+    productId: ref("products"),
+    warehouseId: ref("warehouses"),
+    quantity: qty(),
+    reserved: qty(),
+    damaged: qty(),
+    version: version(),
+  },
+  [{ unique: true, fields: ["productId", "warehouseId"] }],
+);
+const Distributor = define(
+  "distributors",
+  {
+    name: str(),
+    userId: { ...ref("users", true), unique: true },
+    locationId: ref("locations"),
+    phone: D.STRING,
+    address: D.TEXT,
+    active: { type: D.BOOLEAN, defaultValue: true },
+    version: version(),
+  },
+  [],
+  true,
+);
+const Movement = define(
+  "inventory_transactions",
+  {
+    number: { ...str(64), unique: true },
+    type: str(32),
+    productId: ref("products"),
+    warehouseId: ref("warehouses"),
+    destinationWarehouseId: ref("warehouses", true),
+    locationId: ref("locations"),
+    distributorId: ref("distributors", true),
+    quantity: qty(),
+    cost: money(),
+    userId: ref("users"),
+    occurredAt: { type: D.DATE, allowNull: false },
+    reference: D.STRING,
+    counterparty: D.STRING,
+    delivery: D.TEXT,
+    notes: D.TEXT,
+    status: { ...str(32), defaultValue: "confirmed" },
+    syncStatus: { ...str(32), defaultValue: "synced" },
+    operationId: { type: D.UUID, unique: true },
+    version: version(),
+  },
+  [
+    { fields: ["locationId", "occurredAt"] },
+    { fields: ["productId", "warehouseId"] },
+  ],
+);
+const Transfer = define("warehouse_transfers", {
+  number: { ...str(64), unique: true },
+  productId: ref("products"),
+  sourceWarehouseId: ref("warehouses"),
+  destinationWarehouseId: ref("warehouses"),
+  locationId: ref("locations"),
+  destinationLocationId: ref("locations"),
+  quantity: qty(),
+  requestedBy: ref("users"),
+  receivedBy: ref("users", true),
+  status: { ...str(32), defaultValue: "pending" },
+  notes: D.TEXT,
+  version: version(),
+});
+const Expense = define(
+  "expenses",
+  {
+    number: { ...str(64), unique: true },
+    categoryId: ref("expense_categories"),
+    description: D.TEXT,
+    amount: money(),
+    locationId: ref("locations"),
+    warehouseId: ref("warehouses", true),
+    department: D.STRING,
+    paymentMethod: str(32),
+    createdBy: ref("users"),
+    expenseDate: { type: D.DATEONLY, allowNull: false },
+    reference: D.STRING,
+    receiptUrl: D.STRING,
+    status: { ...str(32), defaultValue: "pending" },
+    version: version(),
+  },
+  [{ fields: ["locationId", "expenseDate"] }],
+  true,
+);
+const Approval = define(
+  "approval_requests",
+  {
+    module: str(64),
+    recordId: { type: D.UUID, allowNull: false },
+    locationId: ref("locations", true),
+    type: str(64),
+    originalData: { type: D.JSON, allowNull: false },
+    proposedData: { type: D.JSON, allowNull: false },
+    reason: D.TEXT,
+    requestedBy: ref("users"),
+    reviewedBy: ref("users", true),
+    reviewedAt: D.DATE,
+    reviewComments: D.TEXT,
+    status: { ...str(32), defaultValue: "pending" },
+  },
+  [{ fields: ["status", "locationId"] }],
+);
+const Audit = define(
+  "audit_logs",
+  {
+    userId: ref("users", true),
+    action: str(64),
+    module: str(64),
+    recordId: D.UUID,
+    locationId: ref("locations", true),
+    previousData: D.JSON,
+    newData: D.JSON,
+    ip: D.STRING(64),
+    userAgent: D.STRING(512),
+  },
+  [{ fields: ["locationId", "createdAt"] }],
+);
+const Notification = define("notifications", {
+  userId: ref("users"),
+  title: str(),
+  message: D.TEXT,
+  href: D.STRING,
+  readAt: D.DATE,
+});
+const SyncOperation = define(
+  "sync_operations",
+  {
+    operationId: { ...str(36), unique: true },
+    userId: ref("users"),
+    locationId: ref("locations", true),
+    payloadHash: str(64),
+    payload: D.JSON,
+    status: str(32),
+    result: D.JSON,
+    error: D.STRING,
+    occurredAt: D.DATE,
+  },
+  [{ fields: ["userId", "status"] }],
+);
+const SystemLog = define("system_logs", {
+  level: str(16),
+  code: str(64),
+  message: str(),
+  userId: ref("users", true),
+  locationId: ref("locations", true),
+  resolvedAt: D.DATE,
+});
+User.belongsToMany(Role, {
+  through: UserRole,
+  foreignKey: "userId",
+  otherKey: "roleId",
+});
+Role.belongsToMany(Permission, {
+  through: RolePermission,
+  foreignKey: "roleId",
+  otherKey: "permissionId",
+});
+User.belongsToMany(Location, {
+  through: UserLocation,
+  foreignKey: "userId",
+  otherKey: "locationId",
+});
+Warehouse.belongsTo(Location, { foreignKey: "locationId" });
+Product.belongsTo(ProductCategory, { foreignKey: "categoryId" });
+Inventory.belongsTo(Product, { foreignKey: "productId" });
+Inventory.belongsTo(Warehouse, { foreignKey: "warehouseId" });
+Movement.belongsTo(Product, { foreignKey: "productId" });
+Movement.belongsTo(Warehouse, { foreignKey: "warehouseId" });
+Expense.belongsTo(ExpenseCategory, { foreignKey: "categoryId" });
+module.exports = {
+  sequelize,
+  Location,
+  Warehouse,
+  Role,
+  Permission,
+  RolePermission,
+  User,
+  UserRole,
+  UserLocation,
+  Session,
+  ProductCategory,
+  ExpenseCategory,
+  Product,
+  Inventory,
+  Distributor,
+  Movement,
+  Transfer,
+  Expense,
+  Approval,
+  Audit,
+  Notification,
+  SyncOperation,
+  SystemLog,
+};
