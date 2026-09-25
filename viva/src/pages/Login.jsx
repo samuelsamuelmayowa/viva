@@ -73,8 +73,7 @@ export default function Login() {
             <section className="flex flex-col justify-between px-7 py-10 sm:px-16">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 lg:invisible">
-                        <img src="/viva.svg" alt="Viva" className="h-8 w-8" />
-                        <span className="text-xl font-bold text-brand-900">viva.</span>
+                        <img src="/viva.png" alt="Viva" className="w-32 object-contain" />
                     </div>
                     <span className="flex items-center gap-1.5 text-xs text-slate-400">
                         <ShieldCheck size={15} />
