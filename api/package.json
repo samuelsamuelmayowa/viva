@@ -6,7 +6,6 @@
     "dev": "node --watch server.js",
     "start": "node server.js",
     "migrate": "node scripts/migrate.js",
-    "bootstrap": "node scripts/bootstrap.js",
     "test": "node --test tests/stock.test.js tests/auth.test.js",
     "test:integration": "node --test tests/integration.cjs"
   },
