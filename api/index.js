@@ -1,9 +1,13 @@
 require("dotenv").config();
 
-const app = require("./api/app.js");
+const express = require("express");
+const apiApp = require("./api/app.js");
 
-const PORT = Number(process.env.PORT) || 10000;
+const app = express();
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ VIVA API running on port ${PORT}`);
-});
+app.disable("x-powered-by");
+
+// Your existing Express application
+app.use(apiApp);
+
+module.exports = app;
