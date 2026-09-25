@@ -41,7 +41,7 @@ export default defineConfig({
     host: "127.0.0.1",
     proxy: {
       "/api": {
-        target: process.env.VITE_API_URL || "http://localhost:" + apiPort,
+        target: process.env.VIVA_API_URL || process.env.VITE_API_URL || "http://localhost:" + apiPort,
         changeOrigin: false,
       },
     },

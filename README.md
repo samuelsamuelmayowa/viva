@@ -65,6 +65,8 @@ Conflicts are never automatically forced through. An administrator records recon
 
 ## Security and deployment
 
+For the Vercel frontend, set the project root to `viva/`. Its `vercel.json` proxies `/api/*` to the existing backend before the SPA fallback. The browser always calls relative `/api` URLs so session cookies remain first-party on iPhone PWAs. `VITE_API_URL` no longer selects a browser-side API origin; use `VIVA_API_URL` to override the local Vite proxy target. API proxy responses must not be cached.
+
 - Passwords use bcrypt; server session and CSRF identifiers use cryptographically random values, with hashes stored in MySQL.
 - Cookies are HttpOnly and SameSite=Strict, with Secure enabled in production. Mutations enforce both the configured Origin and a session-bound CSRF token.
 - Helmet, request size limits, login/API throttling, Zod validation, ORM parameterization, audit logging, and sanitized error responses are enabled.
