@@ -1,10 +1,9 @@
 import axios from "axios";
 
-export const api = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_URL ||
-    "https://vivabackend.vercel.app/api",
+const API_URL = import.meta.env.VITE_API_URL || "https://vivabackend.vercel.app";
 
+export const api = axios.create({
+  baseURL: `${API_URL}/api`,
   withCredentials: true,
   timeout: 20000,
 });
