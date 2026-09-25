@@ -11,7 +11,7 @@ app.disable("x-powered-by");
 
 if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
 
-const origin = process.env.APP_ORIGIN || "http://localhost:5173";
+const origin = process.env.APP_ORIGIN || "http://localhost:5173" || "https://vivafrontend-teal.vercel.app/";
 
 if (process.env.NODE_ENV === "production" && !origin.startsWith("https://"))
     throw new Error("Production APP_ORIGIN must use HTTPS.");
