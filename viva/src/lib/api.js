@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://vivabackend.vercel.app";
+// Avoid Vercel's double-slash redirect on cross-origin preflight requests.
+const API_URL = (import.meta.env.VITE_API_URL || "https://vivabackend.vercel.app")
+  .trim()
+  .replace(/\/+$/, "");
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,

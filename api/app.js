@@ -6,7 +6,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const { rateLimit } = require("express-rate-limit");
 
-const logger = require("../utils/logger");
+const logger = require("./utils/logger");
 
 const app = express();
 
@@ -194,7 +194,7 @@ app.use("/api", (req, res, next) => {
 
 app.use(
     "/api",
-    require("../routes")
+    require("./routes")
 );
 
 
@@ -424,7 +424,7 @@ app.use((error, req, res, _next) => {
         try {
             const {
                 SystemLog,
-            } = require("../models");
+            } = require("./models");
 
             SystemLog.create({
                 level: "error",

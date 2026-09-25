@@ -8,3 +8,5 @@
 *.log
 **/.tmp/
 **/playwright-report/
+
+.vercel
